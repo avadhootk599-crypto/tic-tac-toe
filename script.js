@@ -10,7 +10,7 @@ const GameBoard = (function () {
   };
 
   const isfull = () => {
-    board.every((cell) => cell !== "");
+    return board.every((cell) => cell !== "");
   };
 
   const reset = () => {
@@ -32,7 +32,7 @@ const Player = (name, mark) => {
 };
 
 const gamecontroller = (function () {
-  const player = [Player("Player1", "X"), Player("Player2", "O")];
+  const players = [Player("Player1", "X"), Player("Player2", "O")];
   let activePlayerIndex = 0;
   let gameOver = false;
   let winner = null;
@@ -48,7 +48,7 @@ const gamecontroller = (function () {
     [2, 4, 6],
   ];
 
-  const getActivePlayer = () => player[activePlayerIndex];
+  const getActivePlayer = () => players[activePlayerIndex];
   const getPlayers = () => players;
   const isGameOver = () => gameOver;
   const getWinner = () => winner;
@@ -59,23 +59,24 @@ const gamecontroller = (function () {
 
   const checkWinner = () => {
     const board = GameBoard.getboard();
-    for ([a, b, c] of winningCombos) {
+    for (const [a, b, c] of winningCombos) {
       if (board[a] && board[a] === board[b] && board[a] === board[c]) {
         return board[a];
       }
     }
+    return null;
   };
 
   const playRound = (index) => {
     if (gameOver) return false;
-
-    const placed = GameBoard.placemark(index, getActivePlayer(), getmark());
+    const mark = getActivePlayer().getmark();
+    const placed = GameBoard.placemark(index, mark);
     if (!placed) return false;
 
     const winningmark = checkWinner();
     if (winningmark) {
       gameOver = true;
-      winner = player.find((p) => p.getmark() === winningmark);
+      winner = players.find((p) => p.getmark() === winningmark);
       winner.incrementScore();
     } else if (GameBoard.isfull()) {
       gameOver = true;
@@ -91,11 +92,13 @@ const gamecontroller = (function () {
     activePlayerIndex = 0;
     gameOver = false;
     winner = null;
+    GameBoard.reset();
   };
 
   const reset = () => {
-    player[0] = player(names[0], "X");
-    player[1] = player(names[0], "O");
+    players[0] = Player("Player1", "X");
+    players[1] = Player("Player2", "O");
+    GameBoard.reset();
     playAgain();
   };
 
@@ -125,11 +128,11 @@ const DisplayController = (function () {
 
   const renderBoard = () => {
     boardDiv.innerHTML = "";
-    Gameboard.getBoard().forEach((cell, index) => {
+    GameBoard.getboard().forEach((cell, index) => {
       const btn = document.createElement("button");
       btn.classList.add("cell");
       btn.textContent = cell;
-      btn.disabled = cell !== "" || GameController.isGameOver();
+      btn.disabled = cell !== "" || gamecontroller.isGameOver();
       btn.addEventListener("click", () => handleCellClick(index));
       boardDiv.appendChild(btn);
     });
@@ -140,14 +143,14 @@ const DisplayController = (function () {
     p1ScoreEl.textContent = p1.getscore();
     p2ScoreEl.textContent = p2.getscore();
 
-    const active = GameController.getActivePlayer();
+    const active = gamecontroller.getActivePlayer();
     p1Box.classList.toggle(
       "active",
-      active === p1 && !GameController.isGameOver(),
+      active === p1 && !gamecontroller.isGameOver(),
     );
     p2Box.classList.toggle(
       "active",
-      active === p2 && !GameController.isGameOver(),
+      active === p2 && !gamecontroller.isGameOver(),
     );
   };
 
@@ -157,7 +160,7 @@ const DisplayController = (function () {
   };
 
   const handleCellClick = (index) => {
-    const moved = GameController.playRound(index);
+    const moved = gamecontroller.playRound(index);
     if (moved) renderAll();
   };
 
