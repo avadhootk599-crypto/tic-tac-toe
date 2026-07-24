@@ -19,3 +19,14 @@ const GameBoard = (function () {
 
   return { getboard, placemark, isfull, reset };
 })();
+
+const Player = (name, mark) => {
+  let score = 0;
+
+  const getmark = () => mark;
+  const getscore = () => score;
+  const incrementScore = () => {
+    score += 1;
+  };
+  return { getmark, getscore, incrementScore };
+};
