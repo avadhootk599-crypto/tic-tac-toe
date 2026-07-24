@@ -109,3 +109,81 @@ const gamecontroller = (function () {
     reset,
   };
 })();
+
+const DisplayController = (function () {
+  const boardDiv = document.getElementById("board");
+  const p1NameEl = document.getElementById("player1-name");
+  const p2NameEl = document.getElementById("player2-name");
+  const p1ScoreEl = document.getElementById("player1-score");
+  const p2ScoreEl = document.getElementById("player2-score");
+  const p1Box = document.getElementById("player1-box");
+  const p2Box = document.getElementById("player2-box");
+
+  const startBtn = document.getElementById("start-btn");
+  const playAgainBtn = document.getElementById("play-again-btn");
+  const resetBtn = document.getElementById("reset-btn");
+
+  const renderBoard = () => {
+    boardDiv.innerHTML = "";
+    Gameboard.getBoard().forEach((cell, index) => {
+      const btn = document.createElement("button");
+      btn.classList.add("cell");
+      btn.textContent = cell;
+      btn.disabled = cell !== "" || GameController.isGameOver();
+      btn.addEventListener("click", () => handleCellClick(index));
+      boardDiv.appendChild(btn);
+    });
+  };
+
+  const renderScoreboard = () => {
+    const [p1, p2] = gamecontroller.getPlayers();
+    p1ScoreEl.textContent = p1.getscore();
+    p2ScoreEl.textContent = p2.getscore();
+
+    const active = GameController.getActivePlayer();
+    p1Box.classList.toggle(
+      "active",
+      active === p1 && !GameController.isGameOver(),
+    );
+    p2Box.classList.toggle(
+      "active",
+      active === p2 && !GameController.isGameOver(),
+    );
+  };
+
+  const renderAll = () => {
+    renderBoard();
+    renderScoreboard();
+  };
+
+  const handleCellClick = (index) => {
+    const moved = GameController.playRound(index);
+    if (moved) renderAll();
+  };
+
+  const handleStart = () => {
+    gamecontroller.playAgain();
+    renderAll();
+  };
+
+  const handlePlayAgain = () => {
+    gamecontroller.playAgain();
+    renderAll();
+  };
+
+  const handleReset = () => {
+    gamecontroller.reset();
+    renderAll();
+  };
+
+  const init = () => {
+    startBtn.addEventListener("click", handleStart);
+    resetBtn.addEventListener("click", handleReset);
+    playAgainBtn.addEventListener("click", handlePlayAgain);
+    renderAll();
+  };
+
+  return { init };
+})();
+
+DisplayController.init();
